@@ -25,52 +25,45 @@ initial_board_state = [
 
 
 def is_alive(cell):
-    if cell:
-        return True
-    else:
-        return False
+    return cell == 1
 
 
-def get_amount_of_live_neighbours(state, i, j):
+def get_amount_of_alive_neighbours(state, row, column):
     neighbours = []
-    for row_add in range(-1, 2):
-        new_row = j + row_add
-        if 0 <= new_row <= len(state)-1:
-            for col_add in range(-1, 2):
-                new_col = i + col_add
-                if 0 <= new_col <= len(state)-1:
-                    if new_col == i and new_row == j:
+    for column_add in range(-1, 2):
+        current_column = column + column_add
+        if 0 <= current_column <= len(state)-1:
+            for row_add in range(-1, 2):
+                current_row = row + row_add
+                if 0 <= current_row <= len(state)-1:
+                    if current_row == row and current_column == column:
                         continue
-                    neighbours.append(state[new_col][new_row])
+                    neighbours.append(state[current_row][current_column])
     return sum(neighbours)
 
 
-def die_or_not_to_die(cell, state, i, j):
-    alive_neighbours_amount = get_amount_of_live_neighbours(state, i, j)
-
-    if is_alive(cell):
-        if alive_neighbours_amount < 2:
-            return 0
-        elif alive_neighbours_amount == 2 or alive_neighbours_amount == 3:
-            return 1
-        elif alive_neighbours_amount > 3:
-            return 0
-    else:
-        if alive_neighbours_amount == 3:
-            return 1
-        else:
-            return cell
+def transform_alive_cell(neighbours):
+    return 1 if 1 < neighbours < 4 else 0
 
 
-def transform_cell_state(state, i, j):
-    return die_or_not_to_die(state[i][j], state, i, j)
+def transform_dead_cell(neighbours):
+    return 1 if neighbours == 3 else 0
+
+
+def transform_cell_state(state, row, column):
+    alive_neighbours = get_amount_of_alive_neighbours(state, row, column)
+    cell = state[row][column]
+
+    return transform_alive_cell(alive_neighbours) \
+        if is_alive(cell) \
+        else transform_dead_cell(alive_neighbours)
 
 
 def transform_state(state):
     transformed_state = copy.deepcopy(state)
-    for i in range(len(initial_board_state)):
-        for j in range(len(initial_board_state[i])):
-            transformed_state[i][j] = transform_cell_state(state, i, j)
+    for row in range(len(initial_board_state)):
+        for column in range(len(initial_board_state[row])):
+            transformed_state[row][column] = transform_cell_state(state, row, column)
 
     return transformed_state
 
@@ -80,13 +73,13 @@ def draw_board(state):
         for j in range(len(state[i])):
             print(state[i][j], end='\t')
         print('\n')
-    print('===============================Next_Iteration================================\n')
+    print('===============================End_of_Iteration================================\n')
 
 
 def main(initial_state, iterations):
     state = copy.deepcopy(initial_state)
     draw_board(state)
-    for i in range(0, iterations):
+    for i in range(iterations):
         state = transform_state(state)
         draw_board(state)
 
